@@ -4,14 +4,6 @@ const lizardSound = document.getElementById('lizardSound');
 const counter = document.getElementById('counter');
 const particlesContainer = document.getElementById('particles');
 
-// Utility buttons
-const soundToggle = document.getElementById('soundToggle');
-const resetGame = document.getElementById('resetGame');
-const shareScore = document.getElementById('shareScore');
-const infoBtn = document.getElementById('infoBtn');
-const infoModal = document.getElementById('infoModal');
-const modalClose = document.querySelector('.modal-close');
-
 // Achievement elements
 const achievements = {
     10: document.getElementById('achievement-10'),
@@ -298,83 +290,6 @@ function triggerMilestoneEffect() {
     }
 }
 
-// Utility button functions
-function toggleSound() {
-    gameState.soundEnabled = !gameState.soundEnabled;
-    localStorage.setItem('soundEnabled', gameState.soundEnabled.toString());
-    
-    soundToggle.classList.toggle('active', gameState.soundEnabled);
-    soundToggle.querySelector('.btn-icon').textContent = gameState.soundEnabled ? '🔊' : '🔇';
-    
-    if (gameState.soundEnabled) {
-        playLizardSound();
-    }
-}
-
-function resetGameProgress() {
-    if (confirm('Are you sure you want to reset your progress? This cannot be undone!')) {
-        gameState.lizardCount = 0;
-        gameState.unlockedAchievements = [];
-        
-        localStorage.setItem('lizardCount', '0');
-        localStorage.setItem('unlockedAchievements', '[]');
-        
-        counter.textContent = '0';
-        
-        // Reset achievements
-        Object.values(achievements).forEach(achievement => {
-            achievement.classList.remove('unlocked');
-        });
-        
-        // Show reset confirmation
-        createFloatingText('RESET!');
-    }
-}
-
-function shareScore() {
-    const shareText = `I just tapped ${gameState.lizardCount.toLocaleString()} lizards in the ultimate lizard tapping game! Can you beat my score? 🦎`;
-    
-    if (navigator.share) {
-        navigator.share({
-            title: 'Tap the Lizard - My Score',
-            text: shareText,
-            url: window.location.href
-        });
-    } else if (navigator.clipboard) {
-        navigator.clipboard.writeText(`${shareText} ${window.location.href}`).then(() => {
-            createFloatingText('COPIED!');
-        });
-    } else {
-        // Fallback
-        const textArea = document.createElement('textarea');
-        textArea.value = `${shareText} ${window.location.href}`;
-        document.body.appendChild(textArea);
-        textArea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textArea);
-        createFloatingText('COPIED!');
-    }
-}
-
-function showInfo() {
-    infoModal.style.display = 'flex';
-    document.body.style.overflow = 'hidden';
-}
-
-function hideInfo() {
-    infoModal.style.display = 'none';
-    document.body.style.overflow = '';
-}
-
-// Privacy and contact functions (placeholder)
-function showPrivacy() {
-    alert('Privacy Policy: This game stores your progress locally in your browser. No personal data is collected or shared.');
-}
-
-function showContact() {
-    alert('Contact: This is a demo game. For inquiries, please visit the GitHub repository.');
-}
-
 // Initialize game
 function initializeGame() {
     // Set initial counter
@@ -385,10 +300,6 @@ function initializeGame() {
         gameState.soundEnabled = true;
         localStorage.setItem('soundEnabled', 'true');
     }
-    
-    // Initialize sound toggle
-    soundToggle.classList.toggle('active', gameState.soundEnabled);
-    soundToggle.querySelector('.btn-icon').textContent = gameState.soundEnabled ? '🔊' : '🔇';
     
     // Initialize achievements
     gameState.unlockedAchievements.forEach(level => {
@@ -413,27 +324,11 @@ lizardButton.addEventListener('touchstart', (e) => {
     handleLizardClick();
 });
 
-// Utility button events
-soundToggle.addEventListener('click', toggleSound);
-resetGame.addEventListener('click', resetGameProgress);
-shareScore.addEventListener('click', shareScore);
-infoBtn.addEventListener('click', showInfo);
-
-// Modal events
-modalClose.addEventListener('click', hideInfo);
-infoModal.addEventListener('click', (e) => {
-    if (e.target === infoModal) {
-        hideInfo();
-    }
-});
-
 // Keyboard support
 document.addEventListener('keydown', (e) => {
     if (e.code === 'Space' || e.code === 'Enter') {
         e.preventDefault();
         handleLizardClick();
-    } else if (e.code === 'Escape' && infoModal.style.display === 'flex') {
-        hideInfo();
     }
 });
 
@@ -505,10 +400,6 @@ const enableAudio = () => {
 
 document.addEventListener('click', enableAudio);
 document.addEventListener('touchstart', enableAudio);
-
-// Add global functions for footer links
-window.showPrivacy = showPrivacy;
-window.showContact = showContact;
 
 // Performance monitoring
 let lastFrameTime = performance.now();
