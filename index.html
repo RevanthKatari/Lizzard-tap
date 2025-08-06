@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tap the Lizard - LIZARD LIZARD LIZARD</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">TAP THE LIZARD</h1>
+        
+        <div class="lizard-container">
+            <button id="lizardButton" class="lizard-button">
+                <div class="lizard-emoji">🦎</div>
+                <div class="button-text">LIZARD</div>
+            </button>
+        </div>
+        
+        <div class="counter-container">
+            <span id="counter">0</span>
+            <span class="counter-label">LIZARDS</span>
+        </div>
+        
+        <!-- Audio element for the lizard sound -->
+        <audio id="lizardSound" preload="auto">
+            <source src="lizard-sound.wav" type="audio/wav">
+        </audio>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
