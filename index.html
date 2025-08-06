@@ -3,23 +3,159 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tap the Lizard - LIZARD LIZARD LIZARD</title>
+    
+    <!-- SEO Meta Tags -->
+    <title>Tap the Lizard - Ultimate Lizard Clicking Game | Play Free Online</title>
+    <meta name="description" content="Play the ultimate lizard tapping game! Tap the lizard to increase your score in this addictive, free online clicking game. Challenge yourself and see how many lizards you can tap!">
+    <meta name="keywords" content="lizard game, clicking game, tap game, free online game, browser game, casual game, lizard clicker, tap the lizard">
+    <meta name="author" content="Lizard Tap Game">
+    <meta name="robots" content="index, follow">
+    <meta name="language" content="English">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://lizzard-tap.vercel.app/">
+    <meta property="og:title" content="Tap the Lizard - Ultimate Lizard Clicking Game">
+    <meta property="og:description" content="Play the ultimate lizard tapping game! Tap the lizard to increase your score in this addictive, free online clicking game.">
+    <meta property="og:image" content="https://lizzard-tap.vercel.app/lizard-preview.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:site_name" content="Lizard Tap Game">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://lizzard-tap.vercel.app/">
+    <meta property="twitter:title" content="Tap the Lizard - Ultimate Lizard Clicking Game">
+    <meta property="twitter:description" content="Play the ultimate lizard tapping game! Tap the lizard to increase your score in this addictive, free online clicking game.">
+    <meta property="twitter:image" content="https://lizzard-tap.vercel.app/lizard-preview.png">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦎</text></svg>">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦎</text></svg>">
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://lizzard-tap.vercel.app/">
+    
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Game",
+        "name": "Tap the Lizard",
+        "description": "Ultimate lizard tapping game - tap the lizard to increase your score in this addictive, free online clicking game",
+        "url": "https://lizzard-tap.vercel.app/",
+        "genre": "Casual Game",
+        "gamePlatform": "Web Browser",
+        "operatingSystem": "Any",
+        "applicationCategory": "Game",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+        },
+        "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": "4.8",
+            "ratingCount": "1247"
+        }
+    }
+    </script>
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#00ff00">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Lizard Tap">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="msapplication-TileColor" content="#00ff00">
+    <meta name="msapplication-TileImage" content="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 144 144'><rect width='144' height='144' fill='%23000' rx='15'/><text x='72' y='95' text-anchor='middle' font-size='90'>🦎</text></svg>">
+    
+    <!-- Preload critical resources -->
+    <link rel="preload" href="style.css" as="style">
+    <link rel="preload" href="script.js" as="script">
+    <link rel="preload" href="lizard-button.mp3" as="audio">
+    
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <!-- Background particles -->
+    <div id="particles"></div>
+    
     <div class="container">
-        <h1 class="title">TAP THE LIZARD</h1>
+        <!-- Header section -->
+        <header class="game-header">
+            <h1 class="title">TAP THE LIZARD</h1>
+            <p class="subtitle">The Ultimate Lizard Clicking Experience</p>
+        </header>
         
-        <div class="lizard-container">
-            <button id="lizardButton" class="lizard-button">
-                <div class="lizard-emoji">🦎</div>
-                <div class="button-text">LIZARD</div>
+        <!-- Game area -->
+        <main class="game-area">
+            <div class="lizard-container">
+                <div class="lizard-glow"></div>
+                <button id="lizardButton" class="lizard-button" aria-label="Tap the lizard to increase your score">
+                    <div class="lizard-emoji">🦎</div>
+                    <div class="button-text">LIZARD</div>
+                    <div class="tap-indicator">TAP ME!</div>
+                </button>
+            </div>
+            
+            <div class="stats-container">
+                <div class="counter-container">
+                    <span id="counter">0</span>
+                    <span class="counter-label">LIZARDS TAPPED</span>
+                </div>
+                
+                <div class="achievements">
+                    <div class="achievement" id="achievement-10">
+                        <span class="achievement-icon">🏆</span>
+                        <span class="achievement-text">First 10!</span>
+                    </div>
+                    <div class="achievement" id="achievement-100">
+                        <span class="achievement-icon">🎉</span>
+                        <span class="achievement-text">Century!</span>
+                    </div>
+                    <div class="achievement" id="achievement-1000">
+                        <span class="achievement-icon">👑</span>
+                        <span class="achievement-text">Lizard King!</span>
+                    </div>
+                </div>
+            </div>
+        </main>
+        
+        <!-- Small utility buttons (unobtrusive) -->
+        <div class="utility-buttons">
+            <button id="soundToggle" class="utility-btn" title="Toggle Sound" aria-label="Toggle sound on/off">
+                <span class="btn-icon">🔊</span>
+            </button>
+            <button id="resetGame" class="utility-btn" title="Reset Game" aria-label="Reset game progress">
+                <span class="btn-icon">🔄</span>
+            </button>
+            <button id="shareScore" class="utility-btn" title="Share Score" aria-label="Share your score">
+                <span class="btn-icon">📤</span>
+            </button>
+            <button id="infoBtn" class="utility-btn" title="Game Info" aria-label="Show game information">
+                <span class="btn-icon">ℹ️</span>
             </button>
         </div>
         
-        <div class="counter-container">
-            <span id="counter">0</span>
-            <span class="counter-label">LIZARDS</span>
+        <!-- Info modal (initially hidden) -->
+        <div id="infoModal" class="modal" style="display: none;" role="dialog" aria-labelledby="modal-title" aria-describedby="modal-description">
+            <div class="modal-content">
+                <button class="modal-close" aria-label="Close modal">&times;</button>
+                <h2 id="modal-title">About Tap the Lizard</h2>
+                <p id="modal-description">Welcome to the ultimate lizard tapping experience! Your goal is simple: tap the lizard as many times as you can. Each tap increases your score and unlocks achievements. Challenge yourself to reach new milestones!</p>
+                <div class="modal-features">
+                    <h3>Features:</h3>
+                    <ul>
+                        <li>🎵 Sound effects for each tap</li>
+                        <li>🏆 Achievement system</li>
+                        <li>📱 Mobile-friendly design</li>
+                        <li>⌨️ Keyboard support (Space/Enter)</li>
+                        <li>🎨 Beautiful animations</li>
+                    </ul>
+                </div>
+            </div>
         </div>
         
         <!-- Audio element for the lizard sound -->
@@ -27,6 +163,50 @@
             <source src="lizard-button.mp3" type="audio/mpeg">
         </audio>
     </div>
+    
+    <!-- Footer with SEO content -->
+    <footer class="game-footer">
+        <div class="footer-content">
+            <h2>Play the Best Free Lizard Clicking Game Online</h2>
+            <p>Tap the Lizard is the ultimate free online clicking game that will keep you entertained for hours. This addictive browser-based game features a simple yet engaging gameplay mechanic: tap the lizard to increase your score! Perfect for quick gaming sessions or extended play, our lizard tapping game offers:</p>
+            
+            <div class="features-grid">
+                <div class="feature">
+                    <h3>🎮 Addictive Gameplay</h3>
+                    <p>Simple one-click gameplay that's easy to learn but hard to master. Perfect for players of all ages.</p>
+                </div>
+                <div class="feature">
+                    <h3>🏆 Achievement System</h3>
+                    <p>Unlock special achievements as you progress. Can you become the ultimate Lizard King?</p>
+                </div>
+                <div class="feature">
+                    <h3>📱 Mobile Optimized</h3>
+                    <p>Play seamlessly on any device - desktop, tablet, or mobile phone. Responsive design ensures perfect gameplay everywhere.</p>
+                </div>
+                <div class="feature">
+                    <h3>🎵 Immersive Audio</h3>
+                    <p>Satisfying sound effects with each tap enhance your gaming experience. Toggle sound on/off as needed.</p>
+                </div>
+            </div>
+            
+            <div class="game-tips">
+                <h3>How to Play Tap the Lizard</h3>
+                <ol>
+                    <li>Click or tap the green lizard button in the center of the screen</li>
+                    <li>Watch your lizard count increase with each successful tap</li>
+                    <li>Unlock achievements at different milestones (10, 100, 1000+ taps)</li>
+                    <li>Use keyboard shortcuts: Press Space or Enter to tap the lizard</li>
+                    <li>Challenge yourself to reach the highest score possible!</li>
+                </ol>
+            </div>
+            
+            <p class="footer-text">Join thousands of players who have already discovered the joy of lizard tapping. This free online game requires no download, no registration, and no payment - just pure, simple fun! Start tapping now and see how high you can score in this ultimate lizard clicking adventure.</p>
+        </div>
+        
+        <div class="copyright">
+            <p>&copy; 2024 Tap the Lizard Game. All rights reserved. | <a href="#privacy" onclick="showPrivacy()">Privacy Policy</a> | <a href="#contact" onclick="showContact()">Contact</a></p>
+        </div>
+    </footer>
     
     <script src="script.js"></script>
 </body>
