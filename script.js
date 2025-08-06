@@ -22,7 +22,7 @@ const achievements = {
 // Game state
 let gameState = {
     lizardCount: parseInt(localStorage.getItem('lizardCount') || '0'),
-    soundEnabled: localStorage.getItem('soundEnabled') !== 'false',
+    soundEnabled: localStorage.getItem('soundEnabled') === null ? true : localStorage.getItem('soundEnabled') === 'true',
     unlockedAchievements: JSON.parse(localStorage.getItem('unlockedAchievements') || '[]')
 };
 
@@ -379,6 +379,12 @@ function showContact() {
 function initializeGame() {
     // Set initial counter
     counter.textContent = gameState.lizardCount.toLocaleString();
+    
+    // Ensure sound is enabled by default for first-time users
+    if (localStorage.getItem('soundEnabled') === null) {
+        gameState.soundEnabled = true;
+        localStorage.setItem('soundEnabled', 'true');
+    }
     
     // Initialize sound toggle
     soundToggle.classList.toggle('active', gameState.soundEnabled);
