@@ -123,40 +123,7 @@
             </div>
         </main>
         
-        <!-- Small utility buttons (unobtrusive) -->
-        <div class="utility-buttons">
-            <button id="soundToggle" class="utility-btn" title="Toggle Sound" aria-label="Toggle sound on/off">
-                <span class="btn-icon">🔊</span>
-            </button>
-            <button id="resetGame" class="utility-btn" title="Reset Game" aria-label="Reset game progress">
-                <span class="btn-icon">🔄</span>
-            </button>
-            <button id="shareScore" class="utility-btn" title="Share Score" aria-label="Share your score">
-                <span class="btn-icon">📤</span>
-            </button>
-            <button id="infoBtn" class="utility-btn" title="Game Info" aria-label="Show game information">
-                <span class="btn-icon">ℹ️</span>
-            </button>
-        </div>
-        
-        <!-- Info modal (initially hidden) -->
-        <div id="infoModal" class="modal" style="display: none;" role="dialog" aria-labelledby="modal-title" aria-describedby="modal-description">
-            <div class="modal-content">
-                <button class="modal-close" aria-label="Close modal">&times;</button>
-                <h2 id="modal-title">About Tap the Lizard</h2>
-                <p id="modal-description">Welcome to the ultimate lizard tapping experience! Your goal is simple: tap the lizard as many times as you can. Each tap increases your score and unlocks achievements. Challenge yourself to reach new milestones!</p>
-                <div class="modal-features">
-                    <h3>Features:</h3>
-                    <ul>
-                        <li>🎵 Sound effects for each tap</li>
-                        <li>🏆 Achievement system</li>
-                        <li>📱 Mobile-friendly design</li>
-                        <li>⌨️ Keyboard support (Space/Enter)</li>
-                        <li>🎨 Beautiful animations</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
+
         
         <!-- Audio element for the lizard sound -->
         <audio id="lizardSound" preload="auto">
@@ -204,7 +171,7 @@
         </div>
         
         <div class="copyright">
-            <p>&copy; 2024 Tap the Lizard Game. All rights reserved. | <a href="#privacy" onclick="showPrivacy()">Privacy Policy</a> | <a href="#contact" onclick="showContact()">Contact</a></p>
+            <p>&copy; 2024 Tap the Lizard Game. All rights reserved.</p>
         </div>
     </footer>
     
