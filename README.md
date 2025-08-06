@@ -30,7 +30,7 @@ A fun, meme-style web page inspired by the viral "Lizard Lizard Lizard" meme fro
 - `index.html` - Main web page
 - `style.css` - Styling with neon green theme and animations  
 - `script.js` - JavaScript for interactions and audio
-- `lizard-sound.wav` - Generated robotic "LIZARD" sound effect
+- `lizard-button.mp3` - Generated robotic "LIZARD" sound effect
 
 ## Technical Details
 

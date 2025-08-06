@@ -17,7 +17,7 @@ function createAudioPool() {
         const audio = new Audio();
         
         // Try to load from multiple sources
-        audio.src = 'lizard-sound.wav';
+        audio.src = 'lizard-button.mp3';
         
         // Fallback to a simple beep sound if no audio file is found
         audio.onerror = () => {
