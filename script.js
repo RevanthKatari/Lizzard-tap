@@ -2,40 +2,92 @@
 const lizardButton = document.getElementById('lizardButton');
 const lizardSound = document.getElementById('lizardSound');
 const counter = document.getElementById('counter');
+const particlesContainer = document.getElementById('particles');
 
-// State
-let lizardCount = 0;
+// Utility buttons
+const soundToggle = document.getElementById('soundToggle');
+const resetGame = document.getElementById('resetGame');
+const shareScore = document.getElementById('shareScore');
+const infoBtn = document.getElementById('infoBtn');
+const infoModal = document.getElementById('infoModal');
+const modalClose = document.querySelector('.modal-close');
+
+// Achievement elements
+const achievements = {
+    10: document.getElementById('achievement-10'),
+    100: document.getElementById('achievement-100'),
+    1000: document.getElementById('achievement-1000')
+};
+
+// Game state
+let gameState = {
+    lizardCount: parseInt(localStorage.getItem('lizardCount') || '0'),
+    soundEnabled: localStorage.getItem('soundEnabled') !== 'false',
+    unlockedAchievements: JSON.parse(localStorage.getItem('unlockedAchievements') || '[]')
+};
+
+// Audio management
 let audioPool = [];
 let currentAudioIndex = 0;
+const AUDIO_POOL_SIZE = 10;
 
-// Create multiple audio instances for rapid playback without delay
-function createAudioPool() {
-    const poolSize = 10; // Create 10 audio instances
-    audioPool = [];
+// Particle system
+let particles = [];
+const MAX_PARTICLES = 15;
+
+// Initialize particle system
+function createParticle() {
+    const particle = document.createElement('div');
+    particle.className = 'particle';
     
-    for (let i = 0; i < poolSize; i++) {
+    const size = Math.random() * 4 + 2;
+    const left = Math.random() * 100;
+    const animationDuration = Math.random() * 3 + 3;
+    const delay = Math.random() * 2;
+    
+    particle.style.cssText = `
+        width: ${size}px;
+        height: ${size}px;
+        left: ${left}%;
+        animation-duration: ${animationDuration}s;
+        animation-delay: ${delay}s;
+    `;
+    
+    particlesContainer.appendChild(particle);
+    particles.push(particle);
+    
+    // Remove particle after animation
+    setTimeout(() => {
+        if (particle.parentNode) {
+            particle.parentNode.removeChild(particle);
+            particles = particles.filter(p => p !== particle);
+        }
+    }, (animationDuration + delay) * 1000);
+}
+
+function maintainParticles() {
+    while (particles.length < MAX_PARTICLES) {
+        createParticle();
+    }
+}
+
+// Audio system
+function createAudioPool() {
+    audioPool = [];
+    for (let i = 0; i < AUDIO_POOL_SIZE; i++) {
         const audio = new Audio();
-        
-        // Try to load from multiple sources
         audio.src = 'lizard-button.mp3';
-        
-        // Fallback to a simple beep sound if no audio file is found
-        audio.onerror = () => {
-            // Create a simple beep using Web Audio API as fallback
-            createBeepSound();
-        };
-        
         audio.preload = 'auto';
-        audio.volume = 0.7;
+        audio.volume = 0.6;
+        audio.onerror = () => console.log('Audio file not found, using fallback');
         audioPool.push(audio);
     }
 }
 
-// Create a simple beep sound using Web Audio API as fallback
+// Fallback beep sound
 function createBeepSound() {
     try {
         const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        
         return function playBeep() {
             const oscillator = audioContext.createOscillator();
             const gainNode = audioContext.createGain();
@@ -43,7 +95,7 @@ function createBeepSound() {
             oscillator.connect(gainNode);
             gainNode.connect(audioContext.destination);
             
-            oscillator.frequency.value = 800; // Frequency in Hz
+            oscillator.frequency.value = 800;
             oscillator.type = 'square';
             
             gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
@@ -53,74 +105,143 @@ function createBeepSound() {
             oscillator.stop(audioContext.currentTime + 0.1);
         };
     } catch (error) {
-        console.log('Web Audio API not supported');
-        return () => {}; // Return empty function if Web Audio API is not supported
+        return () => {};
     }
 }
 
-// Fallback beep function
 const playBeep = createBeepSound();
 
 // Play lizard sound
 function playLizardSound() {
+    if (!gameState.soundEnabled) return;
+    
     try {
-        // Try to play from audio pool first
         if (audioPool.length > 0) {
             const audio = audioPool[currentAudioIndex];
             currentAudioIndex = (currentAudioIndex + 1) % audioPool.length;
             
-            // Reset audio to beginning and play
             audio.currentTime = 0;
             const playPromise = audio.play();
             
             if (playPromise !== undefined) {
-                playPromise.catch(error => {
-                    console.log('Audio play failed, using beep fallback');
-                    playBeep();
-                });
+                playPromise.catch(() => playBeep());
             }
         } else {
-            // Fallback to beep sound
             playBeep();
         }
     } catch (error) {
-        console.log('Audio error, using beep fallback');
         playBeep();
     }
 }
 
-// Handle button click/tap
-function handleLizardClick() {
-    // Increment counter
-    lizardCount++;
-    counter.textContent = lizardCount;
+// Achievement system
+function checkAchievements() {
+    const achievementLevels = [10, 100, 1000];
     
-    // Play sound
-    playLizardSound();
-    
-    // Add visual feedback
-    lizardButton.style.transform = 'scale(0.9)';
-    setTimeout(() => {
-        lizardButton.style.transform = '';
-    }, 100);
-    
-    // Create floating "LIZARD" text effect
-    createFloatingText();
+    achievementLevels.forEach(level => {
+        if (gameState.lizardCount >= level && !gameState.unlockedAchievements.includes(level)) {
+            unlockAchievement(level);
+        }
+    });
 }
 
-// Create floating text effect
-function createFloatingText() {
+function unlockAchievement(level) {
+    gameState.unlockedAchievements.push(level);
+    localStorage.setItem('unlockedAchievements', JSON.stringify(gameState.unlockedAchievements));
+    
+    const achievement = achievements[level];
+    if (achievement) {
+        achievement.classList.add('unlocked');
+        
+        // Show achievement notification
+        showAchievementNotification(level);
+        
+        // Special effects for major achievements
+        if (level === 100) {
+            triggerCelebration();
+        } else if (level === 1000) {
+            triggerEpicCelebration();
+        }
+    }
+}
+
+function showAchievementNotification(level) {
+    const notification = document.createElement('div');
+    const achievementTexts = {
+        10: 'First 10 Lizards!',
+        100: 'Century Achievement!',
+        1000: 'Lizard King Unlocked!'
+    };
+    
+    notification.innerHTML = `
+        <div style="
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+            border: 2px solid #00ff00;
+            border-radius: 10px;
+            padding: 15px 20px;
+            color: #00ff00;
+            font-weight: bold;
+            z-index: 1001;
+            box-shadow: 0 5px 20px rgba(0, 255, 0, 0.3);
+            animation: slideInRight 0.5s ease, fadeOut 0.5s ease 2.5s;
+        ">
+            🏆 ${achievementTexts[level]}
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.parentNode.removeChild(notification);
+        }
+    }, 3000);
+}
+
+// Celebration effects
+function triggerCelebration() {
+    document.body.style.animation = 'rainbow 2s infinite';
+    setTimeout(() => {
+        document.body.style.animation = '';
+    }, 4000);
+    
+    // Create multiple floating texts
+    for (let i = 0; i < 8; i++) {
+        setTimeout(() => createFloatingText('🎉'), i * 150);
+    }
+}
+
+function triggerEpicCelebration() {
+    // Epic celebration with screen shake and multiple effects
+    document.body.style.animation = 'rainbow 3s infinite, shake 0.5s infinite';
+    setTimeout(() => {
+        document.body.style.animation = '';
+    }, 6000);
+    
+    // Create massive floating text celebration
+    const celebrationTexts = ['👑', '🦎', '⭐', '🎊', '🎉'];
+    for (let i = 0; i < 20; i++) {
+        const text = celebrationTexts[Math.floor(Math.random() * celebrationTexts.length)];
+        setTimeout(() => createFloatingText(text), i * 100);
+    }
+}
+
+// Enhanced floating text
+function createFloatingText(text = 'LIZARD') {
     const floatingText = document.createElement('div');
-    floatingText.textContent = 'LIZARD';
+    floatingText.textContent = text;
     floatingText.style.cssText = `
         position: fixed;
         color: #00ff00;
         font-weight: 900;
-        font-size: 1.5rem;
+        font-size: ${Math.random() * 1 + 1.2}rem;
         pointer-events: none;
         z-index: 1000;
         text-shadow: 0 0 10px #00ff00;
-        animation: floatUp 1s ease-out forwards;
+        animation: floatUp 1.5s ease-out forwards;
     `;
     
     // Position randomly around the button
@@ -133,103 +254,272 @@ function createFloatingText() {
     
     document.body.appendChild(floatingText);
     
-    // Remove after animation
     setTimeout(() => {
         if (floatingText.parentNode) {
             floatingText.parentNode.removeChild(floatingText);
         }
-    }, 1000);
+    }, 1500);
 }
 
-// Add floating animation CSS
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes floatUp {
-        0% {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-        }
-        100% {
-            opacity: 0;
-            transform: translateY(-100px) scale(0.5);
-        }
+// Main game logic
+function handleLizardClick() {
+    // Increment counter
+    gameState.lizardCount++;
+    counter.textContent = gameState.lizardCount.toLocaleString();
+    
+    // Save progress
+    localStorage.setItem('lizardCount', gameState.lizardCount.toString());
+    
+    // Play sound
+    playLizardSound();
+    
+    // Check achievements
+    checkAchievements();
+    
+    // Visual effects
+    createFloatingText();
+    
+    // Button animation
+    lizardButton.style.transform = 'scale(0.9)';
+    setTimeout(() => {
+        lizardButton.style.transform = '';
+    }, 100);
+    
+    // Special effects at certain milestones
+    if (gameState.lizardCount % 50 === 0) {
+        triggerMilestoneEffect();
     }
-`;
-document.head.appendChild(style);
+}
+
+function triggerMilestoneEffect() {
+    // Create burst of particles
+    for (let i = 0; i < 5; i++) {
+        setTimeout(() => createParticle(), i * 50);
+    }
+}
+
+// Utility button functions
+function toggleSound() {
+    gameState.soundEnabled = !gameState.soundEnabled;
+    localStorage.setItem('soundEnabled', gameState.soundEnabled.toString());
+    
+    soundToggle.classList.toggle('active', gameState.soundEnabled);
+    soundToggle.querySelector('.btn-icon').textContent = gameState.soundEnabled ? '🔊' : '🔇';
+    
+    if (gameState.soundEnabled) {
+        playLizardSound();
+    }
+}
+
+function resetGameProgress() {
+    if (confirm('Are you sure you want to reset your progress? This cannot be undone!')) {
+        gameState.lizardCount = 0;
+        gameState.unlockedAchievements = [];
+        
+        localStorage.setItem('lizardCount', '0');
+        localStorage.setItem('unlockedAchievements', '[]');
+        
+        counter.textContent = '0';
+        
+        // Reset achievements
+        Object.values(achievements).forEach(achievement => {
+            achievement.classList.remove('unlocked');
+        });
+        
+        // Show reset confirmation
+        createFloatingText('RESET!');
+    }
+}
+
+function shareScore() {
+    const shareText = `I just tapped ${gameState.lizardCount.toLocaleString()} lizards in the ultimate lizard tapping game! Can you beat my score? 🦎`;
+    
+    if (navigator.share) {
+        navigator.share({
+            title: 'Tap the Lizard - My Score',
+            text: shareText,
+            url: window.location.href
+        });
+    } else if (navigator.clipboard) {
+        navigator.clipboard.writeText(`${shareText} ${window.location.href}`).then(() => {
+            createFloatingText('COPIED!');
+        });
+    } else {
+        // Fallback
+        const textArea = document.createElement('textarea');
+        textArea.value = `${shareText} ${window.location.href}`;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        createFloatingText('COPIED!');
+    }
+}
+
+function showInfo() {
+    infoModal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+
+function hideInfo() {
+    infoModal.style.display = 'none';
+    document.body.style.overflow = '';
+}
+
+// Privacy and contact functions (placeholder)
+function showPrivacy() {
+    alert('Privacy Policy: This game stores your progress locally in your browser. No personal data is collected or shared.');
+}
+
+function showContact() {
+    alert('Contact: This is a demo game. For inquiries, please visit the GitHub repository.');
+}
+
+// Initialize game
+function initializeGame() {
+    // Set initial counter
+    counter.textContent = gameState.lizardCount.toLocaleString();
+    
+    // Initialize sound toggle
+    soundToggle.classList.toggle('active', gameState.soundEnabled);
+    soundToggle.querySelector('.btn-icon').textContent = gameState.soundEnabled ? '🔊' : '🔇';
+    
+    // Initialize achievements
+    gameState.unlockedAchievements.forEach(level => {
+        const achievement = achievements[level];
+        if (achievement) {
+            achievement.classList.add('unlocked');
+        }
+    });
+    
+    // Create audio pool
+    createAudioPool();
+    
+    // Start particle system
+    maintainParticles();
+    setInterval(maintainParticles, 2000);
+}
 
 // Event listeners
 lizardButton.addEventListener('click', handleLizardClick);
 lizardButton.addEventListener('touchstart', (e) => {
-    e.preventDefault(); // Prevent double-firing on mobile
+    e.preventDefault();
     handleLizardClick();
 });
 
-// Keyboard support (spacebar)
+// Utility button events
+soundToggle.addEventListener('click', toggleSound);
+resetGame.addEventListener('click', resetGameProgress);
+shareScore.addEventListener('click', shareScore);
+infoBtn.addEventListener('click', showInfo);
+
+// Modal events
+modalClose.addEventListener('click', hideInfo);
+infoModal.addEventListener('click', (e) => {
+    if (e.target === infoModal) {
+        hideInfo();
+    }
+});
+
+// Keyboard support
 document.addEventListener('keydown', (e) => {
     if (e.code === 'Space' || e.code === 'Enter') {
         e.preventDefault();
         handleLizardClick();
+    } else if (e.code === 'Escape' && infoModal.style.display === 'flex') {
+        hideInfo();
     }
 });
 
-// Initialize audio pool when page loads
-document.addEventListener('DOMContentLoaded', () => {
-    createAudioPool();
-    
-    // Enable audio context on first user interaction (required by browsers)
-    const enableAudio = () => {
-        // Try to resume audio context if it's suspended
-        if (window.AudioContext || window.webkitAudioContext) {
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            if (audioContext.state === 'suspended') {
-                audioContext.resume();
-            }
-        }
-        
-        // Remove the listener after first interaction
-        document.removeEventListener('click', enableAudio);
-        document.removeEventListener('touchstart', enableAudio);
-    };
-    
-    document.addEventListener('click', enableAudio);
-    document.addEventListener('touchstart', enableAudio);
-});
-
-// Prevent context menu on long press (mobile)
+// Prevent context menu on long press
 lizardButton.addEventListener('contextmenu', (e) => {
     e.preventDefault();
 });
 
-// Add some easter eggs for high counts
-function checkForEasterEggs() {
-    if (lizardCount === 100) {
-        document.body.style.animation = 'rainbow 1s infinite';
-        setTimeout(() => {
-            document.body.style.animation = '';
-        }, 3000);
-    }
-    
-    if (lizardCount === 500) {
-        // Crazy mode - rapid fire lizards
-        for (let i = 0; i < 10; i++) {
-            setTimeout(() => createFloatingText(), i * 100);
-        }
-    }
-}
-
-// Add rainbow animation for easter egg
-const rainbowStyle = document.createElement('style');
-rainbowStyle.textContent = `
+// Add CSS animations for special effects
+const additionalStyles = document.createElement('style');
+additionalStyles.textContent = `
     @keyframes rainbow {
         0% { filter: hue-rotate(0deg); }
         100% { filter: hue-rotate(360deg); }
     }
+    
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        75% { transform: translateX(5px); }
+    }
+    
+    @keyframes slideInRight {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    
+    @keyframes fadeOut {
+        from { opacity: 1; }
+        to { opacity: 0; }
+    }
 `;
-document.head.appendChild(rainbowStyle);
+document.head.appendChild(additionalStyles);
 
-// Update the click handler to include easter eggs
-const originalHandler = handleLizardClick;
-handleLizardClick = function() {
-    originalHandler();
-    checkForEasterEggs();
+// Register service worker for PWA functionality
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+            .then((registration) => {
+                console.log('SW registered: ', registration);
+            })
+            .catch((registrationError) => {
+                console.log('SW registration failed: ', registrationError);
+            });
+    });
+}
+
+// Initialize when DOM is loaded
+document.addEventListener('DOMContentLoaded', initializeGame);
+
+// Enable audio context on first user interaction
+const enableAudio = () => {
+    if (window.AudioContext || window.webkitAudioContext) {
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioContext.state === 'suspended') {
+            audioContext.resume();
+        }
+    }
+    
+    document.removeEventListener('click', enableAudio);
+    document.removeEventListener('touchstart', enableAudio);
 };
+
+document.addEventListener('click', enableAudio);
+document.addEventListener('touchstart', enableAudio);
+
+// Add global functions for footer links
+window.showPrivacy = showPrivacy;
+window.showContact = showContact;
+
+// Performance monitoring
+let lastFrameTime = performance.now();
+function monitorPerformance() {
+    const currentTime = performance.now();
+    const deltaTime = currentTime - lastFrameTime;
+    
+    // If frame rate drops significantly, reduce particle count
+    if (deltaTime > 32 && particles.length > 5) { // Less than 30 FPS
+        const particleToRemove = particles.shift();
+        if (particleToRemove && particleToRemove.parentNode) {
+            particleToRemove.parentNode.removeChild(particleToRemove);
+        }
+    }
+    
+    lastFrameTime = currentTime;
+    requestAnimationFrame(monitorPerformance);
+}
+
+requestAnimationFrame(monitorPerformance);
